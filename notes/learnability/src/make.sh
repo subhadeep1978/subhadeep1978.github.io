@@ -11,6 +11,7 @@ bibtex $PROJECT
 
 # HTML
 pandoc "$PROJECT.tex" \
+  --metadata-file=$SRC/src/metadata.yaml \
   -s \
   --toc \
   --toc-depth=3 \
