@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="Subhadeep Roy" />
+  <title>Measuring Learning Efficiency via a Practical Information-Theoretic Approximation</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    /* CSS for citations */
+    div.csl-bib-body { }
+    div.csl-entry {
+      clear: both;
+    }
+    .hanging-indent div.csl-entry {
+      margin-left:2em;
+      text-indent:-2em;
+    }
+    div.csl-left-margin {
+      min-width:2em;
+      float:left;
+    }
+    div.csl-right-inline {
+      margin-left:2em;
+      padding-left:1em;
+    }
+    div.csl-indent {
+      margin-left: 2em;
+    }  </style>
+  <link rel="stylesheet" href="/Users/subhadeeproy/Roy/Learnings/REPOSITORIES/subhadeep78.github.io/assets/css/style.css" />
+  <script defer=""
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js"
+  type="text/javascript"></script>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Measuring Learning Efficiency via a Practical
+Information-Theoretic Approximation</h1>
+<p class="author">Subhadeep Roy</p>
+</header>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#objective" id="toc-objective"><span
+class="toc-section-number">1</span> Objective</a>
+<ul>
+<li><a href="#scope-and-ongoing-work"
+id="toc-scope-and-ongoing-work"><span
+class="toc-section-number">1.1</span> Scope and ongoing work</a></li>
+</ul></li>
+<li><a href="#prior-art" id="toc-prior-art"><span
+class="toc-section-number">2</span> Prior Art</a></li>
+<li><a href="#limitations-of-standard-model-evaluation"
+id="toc-limitations-of-standard-model-evaluation"><span
+class="toc-section-number">3</span> Limitations of Standard Model
+Evaluation</a></li>
+<li><a href="#dataset-learnability" id="toc-dataset-learnability"><span
+class="toc-section-number">4</span> Dataset Learnability</a>
+<ul>
+<li><a href="#estimating-the-posterior-density-of-the-data-labels"
+id="toc-estimating-the-posterior-density-of-the-data-labels"><span
+class="toc-section-number">4.1</span> Estimating the Posterior Density
+of the Data Labels</a>
+<ul>
+<li><a href="#empirical-label-entropy"
+id="toc-empirical-label-entropy"><span
+class="toc-section-number">4.1.1</span> Empirical Label Entropy</a></li>
+<li><a href="#empirical-negative-log-likelihood---nll"
+id="toc-empirical-negative-log-likelihood---nll"><span
+class="toc-section-number">4.1.2</span> Empirical Negative
+Log-Likelihood - NLL</a></li>
+</ul></li>
+</ul></li>
+<li><a href="#model-efficiency" id="toc-model-efficiency"><span
+class="toc-section-number">5</span> Model Efficiency</a></li>
+<li><a href="#interpretation-and-edge-cases"
+id="toc-interpretation-and-edge-cases"><span
+class="toc-section-number">6</span> Interpretation and Edge Cases</a>
+<ul>
+<li><a href="#interpretation-of-learnability"
+id="toc-interpretation-of-learnability"><span
+class="toc-section-number">6.1</span> Interpretation of
+Learnability</a></li>
+<li><a href="#interpretation-of-model-efficiency"
+id="toc-interpretation-of-model-efficiency"><span
+class="toc-section-number">6.2</span> Interpretation of Model
+Efficiency</a></li>
+<li><a href="#noiseless-targets" id="toc-noiseless-targets"><span
+class="toc-section-number">6.3</span> Noiseless Targets</a></li>
+<li><a href="#irreducible-label-noise"
+id="toc-irreducible-label-noise"><span
+class="toc-section-number">6.4</span> Irreducible Label Noise</a></li>
+<li><a href="#random-labels" id="toc-random-labels"><span
+class="toc-section-number">6.5</span> Random Labels</a></li>
+<li><a href="#overconfident-models" id="toc-overconfident-models"><span
+class="toc-section-number">6.6</span> Overconfident Models</a></li>
+<li><a href="#probabilistic-predictions"
+id="toc-probabilistic-predictions"><span
+class="toc-section-number">6.7</span> Probabilistic Predictions</a></li>
+<li><a href="#extension-to-time-varying-data-work-in-progress"
+id="toc-extension-to-time-varying-data-work-in-progress"><span
+class="toc-section-number">6.8</span> Extension to Time-Varying Data
+(Work in Progress)</a></li>
+</ul></li>
+<li><a href="#validation-on-synthetic-dataset"
+id="toc-validation-on-synthetic-dataset"><span
+class="toc-section-number">7</span> Validation on Synthetic Dataset</a>
+<ul>
+<li><a href="#subsec:DatasetConstruction"
+id="toc-subsec:DatasetConstruction"><span
+class="toc-section-number">7.1</span> Dataset Construction</a></li>
+</ul></li>
+<li><a href="#section:experimental_results"
+id="toc-section:experimental_results"><span
+class="toc-section-number">8</span> Experimental Results</a>
+<ul>
+<li><a href="#controlled-learnability-using-synthetic-dataset"
+id="toc-controlled-learnability-using-synthetic-dataset"><span
+class="toc-section-number">8.1</span> Controlled Learnability using
+Synthetic Dataset</a>
+<ul>
+<li><a href="#subsection:result1" id="toc-subsection:result1"><span
+class="toc-section-number">8.1.1</span> Result 1: Same Accuracy,
+Different Information Extraction</a></li>
+<li><a href="#result-2-capacity-scaling-beyond-data-limited-regimes"
+id="toc-result-2-capacity-scaling-beyond-data-limited-regimes"><span
+class="toc-section-number">8.1.2</span> Result 2: Capacity Scaling
+Beyond Data-Limited Regimes</a></li>
+</ul></li>
+<li><a
+href="#avazu-click-through-rate-ctr-prediction---work-in-progress"
+id="toc-avazu-click-through-rate-ctr-prediction---work-in-progress"><span
+class="toc-section-number">8.2</span> Avazu Click Through Rate (CTR)
+Prediction - Work In Progress</a></li>
+</ul></li>
+<li><a href="#interpretation-capacityinformation-saturation"
+id="toc-interpretation-capacityinformation-saturation"><span
+class="toc-section-number">9</span> Interpretation: Capacity–Information
+Saturation</a></li>
+<li><a href="#implications" id="toc-implications"><span
+class="toc-section-number">10</span> Implications</a></li>
+</ul>
+</nav>
+<div class="center">
+
+</div>
+<h1 data-number="1" id="objective"><span
+class="header-section-number">1</span> Objective</h1>
+<p>The objective of this note is to develop a practical method for
+measuring the learning efficiency of predictive models relative to the
+intrinsic structure present in a dataset. In many machine learning
+settings, model performance is evaluated solely by accuracy or loss
+metrics, which makes it difficult to distinguish whether poor
+performance arises from model limitations or from the inherent
+unpredictability of the target variable given the available inputs.
+Information theory provides a principled way to characterize this
+distinction through the mutual information <span
+class="math inline">\(I(X ; Y)\)</span> which quantifies the amount of
+information the input variables <span class="math inline">\(X\)</span>
+contain about the target <span class="math inline">\(Y\)</span>.
+However, direct estimation of mutual information in high-dimensional
+settings is typically intractable. This work proposes a practical
+approximation that uses negative log-likelihood (NLL) under a strong and
+well-calibrated reference model as a proxy for the conditional entropy
+<span class="math inline">\(H(Y | X)\)</span>. This enables us to
+estimate a reasonable lower bound on the intrinsic learnability of a
+dataset, and a corresponding notion of model learning efficiency as the
+fraction of available information that a given model successfully
+extracts from that data.</p>
+<h2 data-number="1.1" id="scope-and-ongoing-work"><span
+class="header-section-number">1.1</span> Scope and ongoing work</h2>
+<p>The present formulation focuses on static datasets where samples are
+assumed to be independently drawn from a fixed distribution. This
+setting allows a clean estimation of intrinsic learnability via
+conditional entropy. Extending this framework to time-varying data where
+observations arrive sequentially and may exhibit temporal dependence is
+an active direction of ongoing work. In such settings, learnability
+becomes a property of the underlying stochastic process rather than a
+fixed dataset, requiring a causal formulation based on entropy-rates and
+history-dependent predictions.</p>
+<h1 data-number="2" id="prior-art"><span
+class="header-section-number">2</span> Prior Art</h1>
+<p>Our formulation builds on classical information theory, where mutual
+information <span class="math inline">\(I(X;Y)=H(Y)-H(Y|X)\)</span>
+characterizes the maximum information about labels that can, in
+principle, be extracted from inputs <span class="citation"
+data-cites="cover_thomas">(Cover and Thomas 2006)</span>. Log-loss
+provides a strictly proper scoring rule for probabilistic prediction
+<span class="citation" data-cites="gneiting_scoring">(Gneiting and
+Raftery 2007)</span>, and modern work on calibration evaluates the
+alignment between predicted probabilities and empirical outcomes <span
+class="citation" data-cites="guo_calibration">(Guo et al.
+2017)</span>.</p>
+<p>Recent work on scaling laws studies how predictive performance varies
+with model size, data volume, and compute <span class="citation"
+data-cites="kaplan2020scaling hoffmann2022chinchilla">(<span
+class="nocase">Kaplan et al.</span> 2020; <span class="nocase">Hoffmann
+et al.</span> 2022)</span>. These approaches identify regimes of
+diminishing returns and characterize compute-optimal model sizes for a
+given dataset. Related work also introduces data quality and redundancy
+as factors that influence effective scaling behavior <span
+class="citation" data-cites="quality_scaling">(Subramanyam et al.
+2025)</span>.</p>
+<p>Complementary perspectives examine tradeoffs between compression and
+prediction at the representation level <span class="citation"
+data-cites="tishby_ib grunwald_mdl">(Tishby et al. 2000; Grünwald
+2007)</span>, as well as systems-level efficiency, where architectural
+and algorithmic optimizations reduce memory and compute requirements
+during inference <span class="citation" data-cites="llm_flash">(Alizadeh
+et al. 2024)</span>.</p>
+<p>Existing work does not explicitly separate the intrinsic information
+available in a dataset from the information actually extracted by a
+model. This distinction is central to our framework, which focuses on
+quantifying extraction efficiency relative to the dataset’s inherent
+predictability, rather than optimizing performance under compute or data
+constraints.</p>
+<p>In practice, when intrinsic limits are unknown, strong models or
+ensembles are commonly used as empirical reference points. For example,
+teacher–student distillation frameworks use high-capacity models to
+define target behavior <span class="citation"
+data-cites="hinton2015distilling">(Hinton et al. 2015)</span>, and
+scaling-law analyses evaluate performance across model families <span
+class="citation" data-cites="kaplan2020scaling">(<span
+class="nocase">Kaplan et al.</span> 2020)</span> rather than against a
+theoretical bound, which is often computationally intractable.</p>
+<h1 data-number="3" id="limitations-of-standard-model-evaluation"><span
+class="header-section-number">3</span> Limitations of Standard Model
+Evaluation</h1>
+<p>Modern machine learning evaluation typically measures model
+performance using metrics such as accuracy, cross-entropy loss, or F1
+score on a held-out dataset. While these metrics quantify predictive
+performance, they do not distinguish between two fundamentally different
+causes of error: model inefficiency and intrinsic unpredictability of
+the data. A model may perform poorly either because it fails to capture
+structure that exists in the data, or because the input variables simply
+do not contain sufficient information to reliably predict the target
+variable. In practice, these two scenarios are indistinguishable when
+evaluation relies solely on predictive accuracy.</p>
+<p>This ambiguity becomes particularly problematic when evaluating new
+architectures, algorithms, or benchmarks. A low-performing model might
+suggest architectural deficiencies, but it could equally indicate that
+the dataset itself contains high levels of noise or irreducible
+uncertainty. Conversely, high performance may simply reflect a dataset
+with low intrinsic entropy rather than a particularly capable model.</p>
+<p>Information theory provides a natural way to formalize this
+distinction. The mutual information <span class="math inline">\(I(X ;
+Y)\)</span> measures how much information the input variables <span
+class="math inline">\(X\)</span> contain about the target <span
+class="math inline">\(Y\)</span> and therefore represents the maximum
+predictive information that any model could extract from the data. While
+theoretical limits of this kind are well understood in principle, they
+are rarely estimated in practice for real-world datasets.</p>
+<p>As a result, models are typically evaluated only by their observed
+performance rather than by how close that performance is to the
+information limit imposed by the dataset.</p>
+<p>To make this ambiguity precise, consider the commonly used F1 score
+for binary classification. Let <span class="math inline">\(\hat{Y} =
+f(X) \in \{0,1\}\)</span> denote the predicted label. The F1 score is
+defined as the harmonic mean of precision and recall and depends only on
+the joint distribution <span class="math inline">\(p(\hat{Y},
+Y)\)</span>. As such, it evaluates predictive performance purely in
+terms of agreement between predicted and true labels, without reference
+to the input variables <span class="math inline">\(X\)</span>. This
+leads to a fundamental limitation: the F1 score does not capture how
+much information about <span class="math inline">\(Y\)</span> is
+actually available in <span class="math inline">\(X\)</span>.
+Consequently, two qualitatively different scenarios may yield identical
+F1 scores. In the first, the dataset may be intrinsically unpredictable,
+with <span class="math inline">\(H(Y \mid X) \approx H(Y)\)</span> and
+<span class="math inline">\(I(X; Y) \approx 0\)</span>, so that even the
+Bayes-optimal classifier performs poorly. In the second, the dataset may
+contain substantial predictive structure, with <span
+class="math inline">\(H(Y \mid X) \ll H(Y)\)</span>, but the model fails
+to approximate the true conditional distribution. In both cases, the
+observed F1 score may be low, yet the underlying causes are
+fundamentally different. Moreover, the F1 score lacks a notion of a
+dataset-dependent performance ceiling: the maximum achievable F1 depends
+on the unknown distribution <span class="math inline">\(p(Y \mid
+X)\)</span> and is therefore not accessible in practice. As a result,
+standard evaluation metrics measure what a model achieves, but not how
+close it operates to the information-theoretic limits imposed by the
+dataset.</p>
+<h1 data-number="4" id="dataset-learnability"><span
+class="header-section-number">4</span> Dataset Learnability</h1>
+<p>A central question in predictive modeling is how much information
+about the target variable is actually present in the input data.
+Intuitively, if the inputs contain little information about the target,
+then even an ideal model cannot achieve high predictive accuracy.
+Conversely, if the inputs contain substantial information about the
+target, then poor model performance indicates that the model has failed
+to extract structure that exists in the data. We refer to the intrinsic
+predictability of a dataset as its <em>learnability</em>.</p>
+<p>Let the dataset consist of input variables <span
+class="math inline">\(X\)</span> and target variable <span
+class="math inline">\(Y\)</span> jointly distributed according to an
+unknown distribution <span class="math inline">\(p(X,Y)\)</span>. This
+formulation assumes a static dataset setting where samples are
+independently drawn from this distribution. The marginal distributions
+are denoted by <span class="math inline">\(p(X)\)</span> and <span
+class="math inline">\(p(Y)\)</span>, and the conditional distribution of
+the target given the input is <span
+class="math inline">\(p(Y|X)\)</span>. The entropy of the target
+variable is defined as</p>
+<p><span class="math display">\[H(Y) = - \sum_{y} p(y)\log p(y)\]</span>
+which measures the total uncertainty in the labels before observing the
+input. The conditional entropy of the target given the input is</p>
+<p><span class="math display">\[H(Y|X) = - \mathbb{E}_{p(X,Y)}[\log
+p(Y|X)]\]</span> which measures the residual uncertainty in the target
+after observing the input. The reduction in uncertainty obtained by
+observing the input is quantified by the mutual information</p>
+<p><span class="math display">\[I(X;Y) = H(Y) - H(Y|X)\]</span> which
+measures how much information the input variables contain about the
+target. We define the <em>learnability</em> of the dataset as the
+fraction of label uncertainty that can, in principle, be resolved using
+the input:</p>
+<p><span class="math display">\[L(X,Y) = \frac{I(X;Y)}{H(Y)} = 1 -
+\frac{H(Y|X)}{H(Y)}\]</span></p>
+<p>This normalization ensures that learnability lies in the interval
+<span class="math inline">\([0,1]\)</span>. When <span
+class="math inline">\(L(X,Y)=0\)</span>, the inputs contain no
+information about the target, and prediction is fundamentally
+impossible. When <span class="math inline">\(L(X,Y)=1\)</span>, the
+target is fully determined by the inputs.</p>
+<p>In practice, computing <span class="math inline">\(L(X,Y)\)</span>
+requires estimating the conditional entropy <span
+class="math inline">\(H(Y|X)\)</span>, which depends on the true
+conditional distribution <span class="math inline">\(p(Y|X)\)</span>.
+For realistic datasets this distribution is unknown and generally
+intractable to estimate directly.</p>
+<p>To obtain a practical approximation, we instead train a high-capacity
+<em>golden model</em> <span class="math inline">\(G\)</span> whose
+purpose is to approximate the true conditional distribution. Let the
+predictive distribution of this model be denoted by <span
+class="math inline">\(q_G(Y|X)\)</span>, where</p>
+<p><span class="math display">\[q_G(Y|X) \approx p(Y|X)\]</span></p>
+<p>Under this approximation, the conditional entropy can be estimated
+using the negative log-likelihood of the golden model:</p>
+<p><span class="math display">\[H(Y|X) \approx -
+\mathbb{E}_{p(X,Y)}[\log q_G(Y|X)]\]</span></p>
+<p>This expectation can be estimated empirically on held-out data as
+follows.</p>
+<h2 data-number="4.1"
+id="estimating-the-posterior-density-of-the-data-labels"><span
+class="header-section-number">4.1</span> Estimating the Posterior
+Density of the Data Labels</h2>
+<p>Let the dataset be <span
+class="math display">\[\mathcal{D}=\{(x_i,y_i)\}_{i=1}^{n},
+\qquad y_i \in \{1,\dots,K\}.\]</span> The probabilistic predictor <span
+class="math inline">\(G\)</span> returns a categorical distribution over
+labels: <span class="math display">\[G(x) \equiv q_G(\cdot \mid
+x)\in\Delta^{K-1}, \qquad
+q_G(k\mid x)\ge 0,\quad \sum_{k=1}^K q_G(k\mid x)=1.\]</span>
+(Throughout, logarithms are base-2 (units: <em>bits</em>). Switching to
+natural logs yields units of <em>nats</em>.)</p>
+<h3 data-number="4.1.1" id="empirical-label-entropy"><span
+class="header-section-number">4.1.1</span> Empirical Label Entropy</h3>
+<p>Let the empirical class probabilities be <span
+class="math display">\[\hat p(k) \;=\;
+\frac{1}{n}\sum_{i=1}^{n}\mathbf{1}\{y_i=k\}.\]</span> The empirical
+label entropy is <span class="math display">\[\hat H(Y) \;=\;
+-\sum_{k=1}^{K}\hat p(k)\log_2 \hat p(k),\]</span> with the convention
+<span class="math inline">\(0\log 0 \equiv 0\)</span>.</p>
+<h3 data-number="4.1.2"
+id="empirical-negative-log-likelihood---nll"><span
+class="header-section-number">4.1.2</span> Empirical Negative
+Log-Likelihood - NLL</h3>
+<p>For a single example <span class="math inline">\((x_i,y_i)\)</span>,
+the negative log-likelihood under model <span
+class="math inline">\(G\)</span> is <span
+class="math display">\[\ell_i(G) \;=\; -\log_2 q_G(y_i\mid
+x_i).\]</span> Here <span class="math inline">\(q_G(y_i \mid
+x_i)\)</span> denotes the probability assigned by the model <span
+class="math inline">\(G\)</span> to the true label <span
+class="math inline">\(y_i\)</span> given input <span
+class="math inline">\(x_i\)</span>. In general this probability is
+typically strictly less than 1 in stochastic or noisy settings (the
+probability mass function is smeared around the true label). The
+per-sample negative log-likelihood <span
+class="math inline">\(\ell_i(G)\)</span> therefore measures the
+information (in bits) associated with the event that the model assigns
+probability <span class="math inline">\(q_G(y_i \mid x_i)\)</span> to
+the observed label. The empirical NLL over a dataset <span
+class="math inline">\(\mathcal{D}\)</span> is the sample mean <span
+class="math display">\[\widehat{\mathrm{NLL}}_G(\mathcal{D})
+\;=\;
+\frac{1}{n}\sum_{i=1}^{n} \ell_i(G)
+\;=\;
+-\frac{1}{n}\sum_{i=1}^{n}\log_2 q_G(y_i\mid x_i).\]</span> <span
+class="math inline">\(\widehat{\mathrm{NLL}}_G\)</span> as estimated
+above can serve as an upper bound to the true conditional entropy as:
+<span class="math display">\[\widehat{\mathrm{NLL}}_G \geq H(Y |
+X)\]</span> Consequently, learnability, expressed as the normalized
+information contained in the dataset can be approximated by the golden
+model <span class="math inline">\(G\)</span> as :</p>
+<p><span class="math display">\[\boxed{
+L_G(X,Y) \approx 1 - \frac{\widehat{\mathrm{NLL}}_G }{\hat H(Y) }
+}\]</span> Because the golden model only approximates the true posterior
+distribution, the resulting estimate constitutes a <em>lower bound</em>
+on the true learnability ceiling. The gap between the estimated
+learnability and the true value depends on how well the golden model
+approximates <span class="math inline">\(p(Y|X)\)</span>, and therefore
+on the representational capacity and training quality of <span
+class="math inline">\(G\)</span>.</p>
+<p><strong>Evaluation protocol.</strong> To approximate generalization,
+<span class="math inline">\(\widehat{\mathrm{NLL}}_G\)</span> should be
+computed on held-out data (validation/test or out-of-fold predictions),
+not on the training set.</p>
+<h1 data-number="5" id="model-efficiency"><span
+class="header-section-number">5</span> Model Efficiency</h1>
+<p>Noting, that the above framework solely captures the learnability of
+the dataset (with <span class="math inline">\(G\)</span> being an oracle
+estimator - used offline for evaluation), we now discuss the canonical
+efficiency of a given model under test: <span
+class="math inline">\(F\)</span>. We pass the model <span
+class="math inline">\(F\)</span> through the above framework to
+calculate the normalized mutual information between the true labels
+<span class="math inline">\(Y\)</span> and the labels <span
+class="math inline">\(F(X)\)</span> predicted by <span
+class="math inline">\(F\)</span> as: <span
+class="math display">\[\begin{equation}
+I_n(F(X);Y) = 1 - \frac{H(Y\mid F(X))}{H(Y)}   \approx 1 -
+\frac{\widehat{\mathrm{NLL}}_F}{\hat H(Y)}
+\end{equation}\]</span> and finally normalize it to calculate the
+efficiency factor as:</p>
+<p><span class="math display">\[\begin{equation}
+\boxed{
+    \eta(f)\;\coloneqq\;\frac{I_n(F(X);Y)}{ L_G(X,Y)}.
+}
+\end{equation}\]</span></p>
+<h1 data-number="6" id="interpretation-and-edge-cases"><span
+class="header-section-number">6</span> Interpretation and Edge
+Cases</h1>
+<p>This section discusses how the proposed quantities behave under
+several important regimes and clarifies how to interpret the resulting
+metrics.</p>
+<h2 data-number="6.1" id="interpretation-of-learnability"><span
+class="header-section-number">6.1</span> Interpretation of
+Learnability</h2>
+<p>The dataset learnability <span
+class="math inline">\(L_G(X,Y)\)</span> measures the fraction of label
+entropy that can be explained by the input variables.</p>
+<ul>
+<li><p><strong><span class="math inline">\(L_G(X,Y)\approx
+0\)</span>.</strong> The inputs contain little information about the
+labels. Even an optimal model cannot achieve reliable prediction, and
+performance near random guessing is expected.</p></li>
+<li><p><strong><span class="math inline">\(L_G(X,Y)\approx
+1\)</span>.</strong> The labels are almost fully determined by the
+inputs. High predictive accuracy should in principle be
+achievable.</p></li>
+<li><p><strong>Intermediate values.</strong> Most real datasets fall in
+this regime, where part of the label entropy is predictable and the rest
+represents irreducible uncertainty or noise.</p></li>
+</ul>
+<h2 data-number="6.2" id="interpretation-of-model-efficiency"><span
+class="header-section-number">6.2</span> Interpretation of Model
+Efficiency</h2>
+<p>The efficiency score</p>
+<p><span class="math display">\[\eta(f) =
+\frac{I_n(F(X);Y)}{L_G(X,Y)}\]</span></p>
+<p>measures the fraction of available information that the model <span
+class="math inline">\(F\)</span> extracts from the dataset.</p>
+<ul>
+<li><p><strong><span class="math inline">\(\eta(f)\approx
+1\)</span>.</strong> The model extracts nearly all of the information
+available in the dataset. Further architectural improvements are
+unlikely to produce large gains unless the dataset itself
+changes.</p></li>
+<li><p><strong><span class="math inline">\(\eta(f)\ll
+1\)</span>.</strong> The dataset contains predictive structure that the
+model fails to capture. Model improvements may significantly increase
+performance.</p></li>
+</ul>
+<h2 data-number="6.3" id="noiseless-targets"><span
+class="header-section-number">6.3</span> Noiseless Targets</h2>
+<p>If the labels are deterministic functions of the inputs, then</p>
+<p><span class="math display">\[H(Y|X)=0.\]</span></p>
+<p>In this case the intrinsic learnability is</p>
+<p><span class="math display">\[L(X,Y)=1.\]</span></p>
+<p>If both the golden model <span class="math inline">\(G\)</span> and
+the evaluated model <span class="math inline">\(F\)</span> perfectly
+capture the mapping, their NLL approaches zero and the estimated mutual
+information approaches the label entropy:</p>
+<p><span class="math display">\[I(F(X);Y) \to H(Y).\]</span></p>
+<h2 data-number="6.4" id="irreducible-label-noise"><span
+class="header-section-number">6.4</span> Irreducible Label Noise</h2>
+<p>When the target contains stochastic components, the conditional
+entropy</p>
+<p><span class="math display">\[H(Y|X) &gt; 0\]</span></p>
+<p>even for the Bayes-optimal predictor. In this setting the negative
+log-likelihood cannot approach zero, and the achievable predictive
+performance is fundamentally limited by the noise level of the
+dataset.</p>
+<h2 data-number="6.5" id="random-labels"><span
+class="header-section-number">6.5</span> Random Labels</h2>
+<p>If labels are statistically independent of the inputs, then</p>
+<p><span class="math display">\[I(X;Y)=0.\]</span></p>
+<p>Consequently the learnability approaches</p>
+<p><span class="math display">\[L(X,Y)\approx 0.\]</span></p>
+<p>In this regime any model, regardless of complexity, performs no
+better than random guessing. This case serves as a useful sanity check
+for the framework.</p>
+<h2 data-number="6.6" id="overconfident-models"><span
+class="header-section-number">6.6</span> Overconfident Models</h2>
+<p>The NLL metric penalizes models that assign high confidence to
+incorrect predictions. An overconfident but inaccurate model may
+therefore achieve poor NLL even if its classification accuracy appears
+reasonable. This behavior is desirable because the proposed framework
+measures the information conveyed by the <strong><em>full predictive
+distribution rather than only the top predicted label</em></strong>.</p>
+<h2 data-number="6.7" id="probabilistic-predictions"><span
+class="header-section-number">6.7</span> Probabilistic Predictions</h2>
+<p>The framework requires models to produce probabilistic outputs <span
+class="math inline">\(q_F(y|x)\)</span>. Hard-label predictions discard
+uncertainty information and prevent accurate estimation of conditional
+entropy. For deterministic classifiers, probability calibration
+techniques may be required before computing NLL-based quantities.</p>
+<h2 data-number="6.8"
+id="extension-to-time-varying-data-work-in-progress"><span
+class="header-section-number">6.8</span> Extension to Time-Varying Data
+(Work in Progress)</h2>
+<p>In many real-world systems, data is generated sequentially and
+exhibits temporal dependence. Examples include sensor streams, financial
+time series, and interactive systems. In such settings, the assumption
+of independently sampled <span class="math inline">\((X,Y)\)</span>
+pairs no longer holds, and the notion of learnability must be
+generalized.</p>
+<p>A natural extension is to define learnability over sequences <span
+class="math inline">\((X_{1:T}, Y_{1:T})\)</span> , where prediction at
+time <span class="math inline">\(t\)</span> depends on the history <span
+class="math inline">\(X_{1:t}\)</span>. The corresponding intrinsic
+uncertainty is governed by conditional entropy rates rather than
+single-step conditional entropy. This leads to a time-indexed notion of
+learnability that varies along the trajectory and reflects the evolving
+predictability of the process. Developing a practical approximation of
+this sequential learnability, analogous to the NLL-based estimator
+proposed here, remains an open direction for future work.</p>
+<h1 data-number="7" id="validation-on-synthetic-dataset"><span
+class="header-section-number">7</span> Validation on Synthetic
+Dataset</h1>
+<p>This section describes the validation plan for the learnability
+framework and demonstrate that negative log-likelihood (NLL) can be used
+to:</p>
+<ul>
+<li><p>Estimate a lower bound on the dataset learnability (intrinsic
+predictability).</p></li>
+<li><p>Separate model inefficiency from intrinsic dataset
+uncertainty.</p></li>
+</ul>
+<p>We generate an ensemble of synthetic datasets with varying degrees of
+learnability and evaluate the framework on the ensemble. Since the
+dataset is synthetic, we have full knowledge of the true posterior
+density of labels which gives us the true underlying learnability of the
+ensemble. We will then run a high-powered oracle model (<span
+class="math inline">\(G\)</span>) to estimate the learnability of the
+ensemble, which will serve as a tight lower bound on the true
+learnability. This lower bound from the oracle model will then be used
+as a baseline for computing the efficiency of a library of models under
+test.</p>
+<h2 data-number="7.1" id="subsec:DatasetConstruction"><span
+class="header-section-number">7.1</span> Dataset Construction</h2>
+<p>Let <span class="math inline">\(X \in \mathbb{R}^d\)</span> denote
+the feature vector. We partition the feature space into subsets with
+different distributions to induce heterogeneous learnability:</p>
+<p><span class="math display">\[\begin{align*}
+    X = [X^{(1)}, X^{(2)}], \quad
+    X^{(1)} \in \mathbb{R}^{d_1}, \; X^{(2)} \in \mathbb{R}^{d_2}, \;
+d_1 + d_2 = d
+\end{align*}\]</span></p>
+<p>The feature subsets are drawn as: <span
+class="math display">\[\begin{align*}
+    X^{(1)} &amp;\sim \mathcal{N}(0, I_{d_1}) \\
+    X^{(2)} &amp;\sim \mathcal{D} \quad \text{(non-Gaussian or
+structured distribution)}
+\end{align*}\]</span></p>
+<p>where <span class="math inline">\(\mathcal{D}\)</span> can be chosen
+to control feature informativeness (e.g., heavy-tailed, bounded, or
+low-variance distributions).</p>
+<p>The latent score is defined as: <span
+class="math display">\[\begin{align*}
+    t(X) = \beta\, w^\top X
+\end{align*}\]</span> where <span class="math inline">\(w\)</span> is a
+binary vector used to mask out a randomly selected feature subset. The
+conditional label distribution is: <span
+class="math display">\[\begin{align*}
+    p(y=1 \mid X) = \sigma(t(X)) = \frac{1}{1 + e^{-t(X)}}
+\end{align*}\]</span></p>
+<p>The binary label is then sampled as: <span class="math display">\[y
+\sim \mathrm{Bernoulli}(p(y=1\mid X)).\]</span></p>
+<h4 data-number="7.1.0.1" id="controlling-learnability"><span
+class="header-section-number">7.1.0.1</span> Controlling
+Learnability</h4>
+<p>The learnability of the dataset is governed by three factors:</p>
+<ul>
+<li><p><strong>Signal strength</strong> (<span
+class="math inline">\(\beta\)</span>): controls the separation between
+classes. For example:</p>
+<ul>
+<li><p>High learnability: <span class="math inline">\(\beta =
+4.0\)</span></p></li>
+<li><p>Medium learnability: <span class="math inline">\(\beta =
+1.5\)</span></p></li>
+<li><p>Low learnability: <span class="math inline">\(\beta =
+0.5\)</span></p></li>
+</ul></li>
+<li><p><strong>Sparsity of the signal</strong> (<span
+class="math inline">\(d&#39;\)</span>): number of active dimensions in
+<span class="math inline">\(w\)</span> (number of 1’s entries in <span
+class="math inline">\(w\)</span>). The remaining <span
+class="math inline">\((d - d&#39;)\)</span> components are set to
+zero.</p>
+<ul>
+<li><p>High learnability: <span class="math inline">\(d&#39; =
+d\)</span> (all features contribute)</p></li>
+<li><p>Medium learnability: <span class="math inline">\(d&#39; =
+\frac{d}{2}\)</span></p></li>
+<li><p>Low learnability: <span class="math inline">\(d&#39; =
+1\)</span></p></li>
+</ul></li>
+<li><p><strong>Feature distribution heterogeneity</strong>: controls how
+informative different subsets of <span class="math inline">\(X\)</span>
+are.</p>
+<ul>
+<li><p>High learnability: informative features concentrated in <span
+class="math inline">\(X^{(1)}\)</span> (Gaussian,
+well-conditioned)</p></li>
+<li><p>Medium learnability: signal spread across both <span
+class="math inline">\(X^{(1)}\)</span> and <span
+class="math inline">\(X^{(2)}\)</span></p></li>
+<li><p>Low learnability: signal concentrated in weak or noisy subset
+<span class="math inline">\(X^{(2)}\)</span></p></li>
+</ul></li>
+</ul>
+<p>This construction allows independent control over signal strength,
+sparsity, and feature distribution, enabling a richer spectrum of
+learnability regimes beyond isotropic Gaussian settings.</p>
+<h1 data-number="8" id="section:experimental_results"><span
+class="header-section-number">8</span> Experimental Results</h1>
+<h2 data-number="8.1"
+id="controlled-learnability-using-synthetic-dataset"><span
+class="header-section-number">8.1</span> Controlled Learnability using
+Synthetic Dataset</h2>
+<p>The dataset is generated as described in section <a
+href="#subsec:DatasetConstruction" data-reference-type="ref"
+data-reference="subsec:DatasetConstruction">7.1</a> with the following
+parameters to control the learnability:</p>
+<ul>
+<li><p>Signal strength: <span class="math inline">\(0.5 &lt; \beta \leq
+10\)</span></p></li>
+<li><p>Sparsity: <span class="math inline">\(\frac{d&#39;}{d}
+\in\)</span> [0.1, 0.5, 1.0]</p></li>
+</ul>
+<p><strong>Models.</strong> We train fixed-depth MLPs with width ranging
+from 32 to 1024, thereby scaling capacity while keeping architecture
+constant.</p>
+<p><strong>Metrics.</strong> For each model <span
+class="math inline">\(f\)</span>:</p>
+<ul>
+<li><p>NLL(f): <span class="math inline">\(-\mathbb{E}_{p(X,y)}[\log
+f(Y|X)]\)</span></p></li>
+<li><p>F1 score (standard accuracy proxy)</p></li>
+<li><p>Model score: <span class="math inline">\(\hat{\L}(f) = 1 -
+\frac{\mathrm{NLL}(f)}{H(Y)}\)</span></p></li>
+<li><p>Efficiency: <span class="math inline">\(\eta(f) =
+\frac{\hat{\L}(f)}{\L_{\text{true}}}\)</span></p></li>
+</ul>
+<p>Efficiency measures the fraction of extractable information captured
+by the model.</p>
+<h3 data-number="8.1.1" id="subsection:result1"><span
+class="header-section-number">8.1.1</span> Result 1: Same Accuracy,
+Different Information Extraction</h3>
+<figure id="figure:synthetic_eff_vs_learnability"
+data-latex-placement="t">
+<img src="figures/efficiency_scatter.png" style="width:90.0%" />
+<figcaption>Efficiency vs dataset learnability for different model
+sizes.</figcaption>
+</figure>
+<p>Figure <a href="#figure:synthetic_eff_vs_learnability"
+data-reference-type="ref"
+data-reference="figure:synthetic_eff_vs_learnability">1</a> plots
+efficiency as a function of dataset learnability for models of different
+sizes.</p>
+<p><strong>Key pattern:</strong></p>
+<ul>
+<li><p>In high-learnability regimes, all models converge in both
+accuracy and efficiency</p></li>
+<li><p>In low-learnability regimes, efficiency differs across model
+sizes, even when accuracy remains similar</p></li>
+</ul>
+<p>Critically, the inset shows that:</p>
+<blockquote>
+<div class="center">
+<p><em>All models appear equivalent under F1 score.</em></p>
+</div>
+</blockquote>
+<p>However,</p>
+<ul>
+<li><p>Raw efficiency differs substantially across model sizes</p></li>
+<li><p>Smaller models often achieve higher efficiency in
+low-learnability regimes</p></li>
+</ul>
+<p>This indicates that two models with identical accuracy can still
+differ in their probabilistic alignment with the underlying data,
+particularly in low-signal regimes. We interpret this as metric
+decoupling where accuracy reflects correctness of discrete decisions
+while efficiency reflects how much of the data’s available signal is
+captured in the predictive distribution.</p>
+<h3 data-number="8.1.2"
+id="result-2-capacity-scaling-beyond-data-limited-regimes"><span
+class="header-section-number">8.1.2</span> Result 2: Capacity Scaling
+Beyond Data-Limited Regimes</h3>
+<figure id="figure:synthetic_eff_vs_modelsize" data-latex-placement="t">
+<img src="figures/eff_vs_modelsize.png" style="width:90.0%" />
+<figcaption>Scaling model capacity beyond dataset
+learnability.</figcaption>
+</figure>
+<p>Figure <a href="#figure:synthetic_eff_vs_modelsize"
+data-reference-type="ref"
+data-reference="figure:synthetic_eff_vs_modelsize">2</a> shows model
+scaling behavior as capacity increases for datasets with varying levels
+of intrinsic learnability.</p>
+<p><strong>Observation:</strong> Once model capacity exceeds the
+dataset’s effective learnability, further increases in capacity do not
+improve the amount of information extracted from the data, even though
+predictive accuracy remains largely unchanged.</p>
+<p>More concretely:</p>
+<ul>
+<li><p>F1 score remains nearly constant across model sizes.</p></li>
+<li><p>Raw NLL worsens with increasing capacity.</p></li>
+<li><p>After calibration, NLL improves substantially, but a residual gap
+remains.</p></li>
+<li><p>Efficiency decreases and approaches a lower plateau in
+low-learnability regimes.</p></li>
+</ul>
+<p>This indicates that there exists a data-dependent capacity threshold
+beyond which, additional model capacity yields diminishing or negative
+returns in probabilistic fidelity, does not improve predictive accuracy,
+and reaches an efficiency-floor after optimal model calibration. We
+refer to this regime as <strong>capacity-information
+saturation</strong>:</p>
+<blockquote>
+<div class="center">
+<p><em>Model capacity grows, but the amount of information extracted
+from the data starts exhibiting diminishing, and sometimes negative,
+returns after calibration.</em></p>
+</div>
+</blockquote>
+<p>Importantly, this behavior is not reflected in accuracy-based
+metrics, which remain stable across model sizes.</p>
+<h2 data-number="8.2"
+id="avazu-click-through-rate-ctr-prediction---work-in-progress"><span
+class="header-section-number">8.2</span> Avazu Click Through Rate (CTR)
+Prediction - Work In Progress</h2>
+<p>In this section we evaluate the framework on Avazu CTR prediction, a
+real-world tabular classification task with unknown intrinsic
+learnability. Since the true learnability is unavailable, we approximate
+a practical reference ceiling using the best calibrated held-out NLL
+among a family of strong tabular models, including gradient-boosted
+trees and TabTransformer. We then compare a small family of MLPs of
+increasing width against this empirical ceiling.</p>
+<h1 data-number="9"
+id="interpretation-capacityinformation-saturation"><span
+class="header-section-number">9</span> Interpretation:
+Capacity–Information Saturation</h1>
+<p>These results empirically separate two concepts that are often
+conflated:</p>
+<ul>
+<li><p><strong>Learnability</strong> (<span
+class="math inline">\(L_{\text{true}}\)</span>): the intrinsic amount of
+predictable information present in the dataset</p></li>
+<li><p><strong>Efficiency</strong> (<span
+class="math inline">\(\eta\)</span>): how much of that available
+information a model actually extracts</p></li>
+</ul>
+<p>When model capacity increases beyond the point at which the available
+signal is already well captured, further scaling does not increase the
+amount of extractable information. Instead, it produces diminishing
+returns in probabilistic fidelity and, in low-learnability regimes, may
+reduce efficiency even after calibration.</p>
+<p>Formally, <span class="math display">\[NLL(f) = H(Y|X) + \mathbb{E}_X
+D_{KL}\!\left(P^*(Y|X)\,\|\,f(Y|X)\right)\]</span> This decomposition
+makes clear that held-out NLL differs from the intrinsic uncertainty
+<span class="math inline">\(H(Y|X)\)</span> by a mismatch term measuring
+how far the model’s predictive distribution is from the true conditional
+distribution. In our experiments, calibration reduces a substantial part
+of this mismatch, but a residual gap remains in low-signal regimes as
+model size increases.</p>
+<p>The resulting picture is not one of unbounded collapse, but of
+<strong>capacity–information saturation</strong>: beyond a
+dataset-dependent threshold, additional capacity does not yield
+additional extracted signal and may lead to lower efficiency.</p>
+<h1 data-number="10" id="implications"><span
+class="header-section-number">10</span> Implications</h1>
+<p>Modern model selection is often dominated by accuracy-based metrics.
+These results show that:</p>
+<ul>
+<li><p>Models can have similar predictive accuracy while differing
+substantially in information extraction efficiency.</p></li>
+<li><p>Increasing model capacity can yield diminishing or negative
+returns in probabilistic fidelity without materially improving
+accuracy.</p></li>
+<li><p>This effect is strongest in low-learnability regimes, where the
+data itself limits the amount of extractable signal.</p></li>
+</ul>
+<p>The learnability–efficiency framework therefore provides a way
+to:</p>
+<ul>
+<li><p>quantify the intrinsic predictability of synthetic datasets, and
+approximate practical reference ceilings when true limits are
+unknown.</p></li>
+<li><p>identify regimes in which calibration improves reliability but
+does not fully close the gap between model predictions and available
+signal.</p></li>
+<li><p>compare models based not only on decision correctness, but on how
+much information they extract from the data relative to what the data
+can support.</p></li>
+</ul>
+<p>In this sense, the framework is not primarily a claim about model
+failure, but a tool for identifying when additional capacity is no
+longer justified by the information content of the dataset.</p>
+<div id="refs" class="references csl-bib-body hanging-indent"
+role="list">
+<div id="ref-llm_flash" class="csl-entry" role="listitem">
+Alizadeh, Keivan, Iman Mirzadeh, Dmitry Belenko, et al. 2024. <span>“LLM
+in a Flash: Efficient Large Language Model Inference with Limited
+Memory.”</span> <em>arXiv Preprint arXiv:2312.11514</em>.
+</div>
+<div id="ref-cover_thomas" class="csl-entry" role="listitem">
+Cover, Thomas M., and Joy A. Thomas. 2006. <em>Elements of Information
+Theory</em>. 2nd ed. Wiley.
+</div>
+<div id="ref-gneiting_scoring" class="csl-entry" role="listitem">
+Gneiting, Tilmann, and Adrian E. Raftery. 2007. <span>“Strictly Proper
+Scoring Rules, Prediction, and Estimation.”</span> <em>Journal of the
+American Statistical Association</em>.
+</div>
+<div id="ref-grunwald_mdl" class="csl-entry" role="listitem">
+Grünwald, Peter D. 2007. <em>The Minimum Description Length
+Principle</em>. MIT Press.
+</div>
+<div id="ref-guo_calibration" class="csl-entry" role="listitem">
+Guo, Chuan, Geoff Pleiss, Yu Sun, and Kilian Q. Weinberger. 2017.
+<span>“On Calibration of Modern Neural Networks.”</span> <em>Proceedings
+of the International Conference on Machine Learning</em>.
+</div>
+<div id="ref-hinton2015distilling" class="csl-entry" role="listitem">
+Hinton, Geoffrey, Oriol Vinyals, and Jeff Dean. 2015. <span>“Distilling
+the Knowledge in a Neural Network.”</span> <em>arXiv Preprint
+arXiv:1503.02531</em>.
+</div>
+<div id="ref-hoffmann2022chinchilla" class="csl-entry" role="listitem">
+<span class="nocase">Hoffmann, Jordan, Sebastian Borgeaud, Arthur
+Mensch, et al.</span> 2022. <span>“Training Compute-Optimal Large
+Language Models.”</span> <em>arXiv Preprint arXiv:2203.15556</em>.
+</div>
+<div id="ref-kaplan2020scaling" class="csl-entry" role="listitem">
+<span class="nocase">Kaplan, Jared, Sam McCandlish, Tom Henighan, et
+al.</span> 2020. <span>“Scaling Laws for Neural Language Models.”</span>
+<em>arXiv Preprint arXiv:2001.08361</em>.
+</div>
+<div id="ref-quality_scaling" class="csl-entry" role="listitem">
+Subramanyam, A., Y. Chen, and R. L. Grossman. 2025. <span>“Scaling Laws
+Revisited: Modeling the Role of Data Quality in Language Model
+Pretraining.”</span> <em>arXiv Preprint arXiv:2510.03313</em>.
+</div>
+<div id="ref-tishby_ib" class="csl-entry" role="listitem">
+Tishby, Naftali, Fernando C. Pereira, and William Bialek. 2000.
+<span>“The Information Bottleneck Method.”</span> <em>arXiv Preprint
+Physics/0004057</em>.
+</div>
+</div>
+</body>
+</html>
