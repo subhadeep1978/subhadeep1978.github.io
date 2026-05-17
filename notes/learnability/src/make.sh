@@ -22,6 +22,7 @@ pandoc "$PROJECT.tex" \
   --bibliography=references.bib
 
   # Mover over
-  mv index.html $SRC/index.html
+  sed 's|img src=\"figures|img src="src/figures|g' index.html > index2.html
+  mv index2.html $SRC/index.html
   mv learnability.pdf $SRC/learnability.pdf
 
