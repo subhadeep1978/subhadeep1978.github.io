@@ -4,19 +4,131 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Field Experiment</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      margin: 0;
+      padding: 0;
+      color: #222;
+      background: #fafafa;
+    }
+
+    main {
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 32px;
+      background: #fff;
+    }
+
+    h1 {
+      font-size: 2rem;
+      line-height: 1.2;
+      margin-bottom: 16px;
+    }
+
+    .summary {
+      font-size: 1.05rem;
+      margin-bottom: 28px;
+    }
+
+    h2 {
+      font-size: 1.25rem;
+      margin-top: 32px;
+      margin-bottom: 12px;
+    }
+
+    ul {
+      padding-left: 22px;
+      margin-bottom: 32px;
+    }
+
+    li {
+      margin-bottom: 10px;
+    }
+
+    img {
+      display: block;
+      max-width: 50%;
+      height: auto;
+      margin: 28px 0;
+      border-radius: 6px;
+    }
+    figcaption {
+      font-size: 0.9rem;
+      font-style: italic;
+      color: #555555;
+      margin-top: 8px;
+    }    
+
+    a {
+      color: #0645ad;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+  </style>
 </head>
+
 <body>
   <main>
     <h1>ONR-Sponsored At-Sea Underwater Acoustic Communications Experiment</h1>
 
-    <p>
+    <p class="summary">
       Field experiment near Kauai involving real-time acoustic data collection,
-      waveform and error-correcting code design, and onboard signal processing under severe shallow-water
-      multipath conditions.
+      waveform and error-correcting code design, and onboard signal processing
+      under severe shallow-water multipath conditions.
+    </p>
+ 
+    <h2>Key Contributions</h2>
+
+    <ul>
+      <li>
+        Achieved a 10x improvement in data rates with improved reliability in
+        extremely hostile communication environments.
+      </li>
+      <li>
+        Designed iterative inference algorithms for hidden-state estimation
+        under highly distorted and noisy underwater acoustic communication channels.
+      </li>
+      <li>
+        Designed belief propagation algorithms over the factor graph of
+        frequency-selective communication channels.
+      </li>
+      <li>
+        Applied iterative uncertainty refinement through turbo equalization for
+        near error-free communications.
+        <img
+          src="iterative_refinement.png"
+          alt="Progressive uncertainty refinement across turbo equalization iterations.
+               The posterior distribution sharpens from diffuse uncertainty toward 
+               highly separable confident states through iterative probabilistic inference and message passing."
+        />
+        <figcaption>Progressive uncertainty refinement across turbo equalization iterations.
+               The posterior distribution sharpens from diffuse uncertainty toward 
+               highly separable confident states through iterative probabilistic inference and message passing.
+        </figcaption>
+
+      </li>
+      <li>
+        Conducted real-time experiment and signal design under extremely tight
+        time and schedule constraints.
+      </li>
+    </ul>
+
+    <h2>Peer Reviewed Publications</h2>
+       <p>
+      <a href="https://scholar.google.com/citations?user=QOkUwpYAAAAJ&hl=en">Google Scholar Profile</a>
     </p>
 
-    <img src="uwa_oceans.png" alt="ASU EE feature showing Subhadeep Roy aboard a research ship near Kauai" style="max-width: 30%; height: auto;" />
 
+
+    <img
+      src="uwa_oceans.png" alt="ASU EE feature showing Subhadeep Roy aboard a research ship near Kauai"/>
+      <figcaption>ASU EE feature showing Subhadeep Roy aboard a research ship near Kauai.</figcaption>    
     <p>
       <a href="asu_ee_2006.pdf">Download full ASU EE Annual Report PDF</a>
     </p>
